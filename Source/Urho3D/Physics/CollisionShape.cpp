@@ -542,6 +542,9 @@ void CollisionShape::DrawDebugGeometry(DebugRenderer* debug, bool depthTest)
                 }
              }
         }
+        if (shapeType_ == SHAPE_CUSTOM)
+        {
+        }
         else
         {
             physicsWorld_->SetDebugRenderer(debug);
@@ -696,6 +699,24 @@ void CollisionShape::SetGImpactMesh(Model* model, unsigned lodLevel, const Vecto
     const Quaternion& rotation)
 {
     SetModelShape(SHAPE_GIMPACTMESH, model, lodLevel, scale, position, rotation);
+}
+
+void CollisionShape::SetCustomShape(btCollisionShape * Shape)
+{
+    if (model_)
+        UnsubscribeFromEvent(model_, E_RELOADFINISHED);
+
+    shapeType_ = SHAPE_CUSTOM;
+    customShape_ = Shape;
+    size_ = Vector3(1,1,1);
+//    position_ = position;
+ //   rotation_ = rotation;
+    model_.Reset();
+    customGeometryID_ = 0;
+
+    UpdateShape();
+    NotifyRigidBody();
+    MarkNetworkUpdate();
 }
 
 void CollisionShape::SetCustomGImpactMesh(CustomGeometry* custom, const Vector3& scale, const Vector3& position,
@@ -968,6 +989,7 @@ void CollisionShape::OnMarkedDirty(Node* node)
             break;
 
         case SHAPE_TRIANGLEMESH:
+        case SHAPE_CUSTOM:
         case SHAPE_CONVEXHULL:
             shape_->setLocalScaling(ToBtVector3(newWorldScale * size_));
             break;
@@ -1048,6 +1070,11 @@ void CollisionShape::UpdateShape()
 
         case SHAPE_TRIANGLEMESH:
             UpdateCachedGeometryShape(physicsWorld_->GetTriMeshCache());
+            break;
+
+        case SHAPE_CUSTOM:
+            shape_.Reset(customShape_.Get());
+            shape_->setLocalScaling(ToBtVector3(cachedWorldScale_));
             break;
 
         case SHAPE_CONVEXHULL:
