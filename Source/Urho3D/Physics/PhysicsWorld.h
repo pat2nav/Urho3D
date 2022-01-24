@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "../Container/List.h"
 #include "../Container/HashSet.h"
 #include "../IO/VectorBuffer.h"
 #include "../Math/BoundingBox.h"
@@ -75,6 +76,7 @@ struct URHO3D_API PhysicsRaycastResult
     float hitFraction_{};
     /// Rigid body that was hit.
     RigidBody* body_{};
+    IntVector3 voxelPosition;
 };
 
 /// Delayed world transform assignment for parented rigidbodies.
@@ -94,16 +96,16 @@ struct DelayedWorldTransform
 struct ManifoldPair
 {
     /// Construct with defaults.
-    ManifoldPair() :
-        manifold_(nullptr),
-        flippedManifold_(nullptr)
+    ManifoldPair() //:
+  //      manifold_(nullptr),
+    //    flippedManifold_(nullptr)
     {
     }
 
     /// Manifold without the body pointers flipped.
-    btPersistentManifold* manifold_;
+    List<btPersistentManifold*> manifolds_;
     /// Manifold with the body pointers flipped.
-    btPersistentManifold* flippedManifold_;
+    List<btPersistentManifold*> flippedManifolds_;
 };
 
 /// Custom overrides of physics internals. To use overrides, must be set before the physics component is created.

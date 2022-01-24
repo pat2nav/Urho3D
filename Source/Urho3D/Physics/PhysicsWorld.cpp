@@ -391,6 +391,13 @@ void PhysicsWorld::Raycast(PODVector<PhysicsRaycastResult>& result, const Ray& r
         newResult.normal_ = ToVector3(rayCallback.m_hitNormalWorld[i]);
         newResult.distance_ = (newResult.position_ - ray.origin_).Length();
         newResult.hitFraction_ = rayCallback.m_closestHitFraction;
+        
+        btVector3i voxelPosition;
+        rayCallback.m_collisionObjects[i]->getVoxelPosition(voxelPosition);
+        newResult.voxelPosition.x_ =  voxelPosition.x;
+        newResult.voxelPosition.y_ =  voxelPosition.y;
+        newResult.voxelPosition.z_ =  voxelPosition.z;
+
         result.Push(newResult);
     }
 
@@ -418,6 +425,12 @@ void PhysicsWorld::RaycastSingle(PhysicsRaycastResult& result, const Ray& ray, f
         result.distance_ = (result.position_ - ray.origin_).Length();
         result.hitFraction_ = rayCallback.m_closestHitFraction;
         result.body_ = static_cast<RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
+
+        btVector3i voxelPosition;
+        rayCallback.m_collisionObject->getVoxelPosition(voxelPosition);
+        result.voxelPosition.x_ =  voxelPosition.x;
+        result.voxelPosition.y_ =  voxelPosition.y;
+        result.voxelPosition.z_ =  voxelPosition.z;
     }
     else
     {
@@ -882,18 +895,19 @@ void PhysicsWorld::SendCollisionEvents()
             if (bodyA < bodyB)
             {
                 bodyPair = MakePair(bodyWeakA, bodyWeakB);
-                currentCollisions_[bodyPair].manifold_ = contactManifold;
+                currentCollisions_[bodyPair].manifolds_.Push(contactManifold);
             }
             else
             {
                 bodyPair = MakePair(bodyWeakB, bodyWeakA);
-                currentCollisions_[bodyPair].flippedManifold_ = contactManifold;
+                currentCollisions_[bodyPair].flippedManifolds_.Push(contactManifold);
             }
         }
 
         for (HashMap<Pair<WeakPtr<RigidBody>, WeakPtr<RigidBody> >, ManifoldPair>::Iterator i = currentCollisions_.Begin();
              i != currentCollisions_.End(); ++i)
         {
+
             RigidBody* bodyA = i->first_.first_;
             RigidBody* bodyB = i->first_.second_;
             if (!bodyA || !bodyB)
@@ -915,10 +929,11 @@ void PhysicsWorld::SendCollisionEvents()
 
             contacts_.Clear();
 
-            // "Pointers not flipped"-manifold, send unmodified normals
-            btPersistentManifold* contactManifold = i->second_.manifold_;
-            if (contactManifold)
+            const List<btPersistentManifold*> & contactManifolds =  i->second_.manifolds_;
+            for (List<btPersistentManifold*>::ConstIterator i2 = contactManifolds.Begin(); i2!=contactManifolds.End(); i2++)
             {
+                // "Pointers not flipped"-manifold, send unmodified normals
+                btPersistentManifold* contactManifold = *i2;
                 for (int j = 0; j < contactManifold->getNumContacts(); ++j)
                 {
                     btManifoldPoint& point = contactManifold->getContactPoint(j);
@@ -928,10 +943,12 @@ void PhysicsWorld::SendCollisionEvents()
                     contacts_.WriteFloat(point.m_appliedImpulse);
                 }
             }
-            // "Pointers flipped"-manifold, flip normals also
-            contactManifold = i->second_.flippedManifold_;
-            if (contactManifold)
+
+            const List<btPersistentManifold*> & flippedManifolds =  i->second_.flippedManifolds_;
+            for (List<btPersistentManifold*>::ConstIterator i2 = flippedManifolds.Begin(); i2!=flippedManifolds.End(); i2++)
             {
+                // "Pointers flipped"-manifold, flip normals also
+                btPersistentManifold* contactManifold = *i2;
                 for (int j = 0; j < contactManifold->getNumContacts(); ++j)
                 {
                     btManifoldPoint& point = contactManifold->getContactPoint(j);
@@ -977,9 +994,11 @@ void PhysicsWorld::SendCollisionEvents()
 
             // Flip perspective to body B
             contacts_.Clear();
-            contactManifold = i->second_.manifold_;
-            if (contactManifold)
+
+
+            for (List<btPersistentManifold*>::ConstIterator i2 = contactManifolds.Begin(); i2!=contactManifolds.End(); i2++)
             {
+                btPersistentManifold* contactManifold = *i2;
                 for (int j = 0; j < contactManifold->getNumContacts(); ++j)
                 {
                     btManifoldPoint& point = contactManifold->getContactPoint(j);
@@ -989,9 +1008,10 @@ void PhysicsWorld::SendCollisionEvents()
                     contacts_.WriteFloat(point.m_appliedImpulse);
                 }
             }
-            contactManifold = i->second_.flippedManifold_;
-            if (contactManifold)
+
+            for (List<btPersistentManifold*>::ConstIterator i2 = flippedManifolds.Begin(); i2!=flippedManifolds.End(); i2++)
             {
+                btPersistentManifold* contactManifold = *i2;
                 for (int j = 0; j < contactManifold->getNumContacts(); ++j)
                 {
                     btManifoldPoint& point = contactManifold->getContactPoint(j);

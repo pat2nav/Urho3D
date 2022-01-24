@@ -34,6 +34,7 @@ class btCollisionShape;
 class btCompoundShape;
 class btGImpactMeshShape;
 class btTriangleMesh;
+class btTriangleMeshShape;
 
 struct btTriangleInfoMap;
 
@@ -60,7 +61,8 @@ enum ShapeType
     SHAPE_TRIANGLEMESH,
     SHAPE_CONVEXHULL,
     SHAPE_TERRAIN,
-    SHAPE_GIMPACTMESH
+    SHAPE_GIMPACTMESH,
+    SHAPE_CUSTOM
 };
 
 /// Base class for collision shape geometry data.
@@ -189,6 +191,7 @@ public:
     /// Set as a triangle mesh from CustomGeometry.
     void SetCustomGImpactMesh(CustomGeometry* custom, const Vector3& scale = Vector3::ONE, const Vector3& position = Vector3::ZERO,
         const Quaternion& rotation = Quaternion::IDENTITY);
+    void SetCustomShape(btCollisionShape * Shape);
     /// Set as a terrain. Only works if the same scene node contains a Terrain component.
     void SetTerrain(unsigned lodLevel = 0);
     /// Set shape type.
@@ -296,6 +299,7 @@ private:
     SharedPtr<CollisionGeometryData> geometry_;
     /// Bullet collision shape.
     UniquePtr<btCollisionShape> shape_;
+    UniquePtr<btCollisionShape> customShape_;
     /// Collision shape type.
     ShapeType shapeType_;
     /// Offset position.
