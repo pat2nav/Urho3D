@@ -143,7 +143,7 @@ public:
     static void RegisterObject(Context* context);
 
     /// Check if an AABB is visible for debug drawing.
-    bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
+//    bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
     /// Draw a physics debug line.
     void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
     /// Log warning from the physics engine.

@@ -212,13 +212,13 @@ void PhysicsWorld::RegisterObject(Context* context)
     URHO3D_ACCESSOR_ATTRIBUTE("Split Impulse", GetSplitImpulse, SetSplitImpulse, bool, false, AM_DEFAULT);
 }
 
-bool PhysicsWorld::isVisible(const btVector3& aabbMin, const btVector3& aabbMax)
+/*bool PhysicsWorld::isVisible(const btVector3& aabbMin, const btVector3& aabbMax)
 {
     if (debugRenderer_)
         return debugRenderer_->IsInside(BoundingBox(ToVector3(aabbMin), ToVector3(aabbMax)));
     else
         return false;
-}
+}*/
 
 void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {

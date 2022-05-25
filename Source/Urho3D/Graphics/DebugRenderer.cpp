@@ -656,10 +656,10 @@ void DebugRenderer::HandleEndFrame(StringHash eventType, VariantMap& eventData)
     unsigned trianglesSize = triangles_.Size();
     unsigned noDepthTrianglesSize = noDepthTriangles_.Size();
 
-    lines_.Clear();
-    noDepthLines_.Clear();
-    triangles_.Clear();
-    noDepthTriangles_.Clear();
+    //lines_.Clear();
+//    noDepthLines_.Clear();
+//    triangles_.Clear();
+  //  noDepthTriangles_.Clear();
 
     if (lines_.Capacity() > linesSize * 2)
         lines_.Reserve(linesSize);
