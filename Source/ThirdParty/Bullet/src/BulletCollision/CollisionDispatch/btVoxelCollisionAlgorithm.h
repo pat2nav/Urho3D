@@ -103,7 +103,7 @@ ATTRIBUTE_ALIGNED16(struct) btVoxelCollisionInfo
 class btVoxelCollisionAlgorithm : public btCollisionAlgorithm
 {
 protected:
-	b3AlignedObjectArray<btVoxelCollisionInfo> m_voxelCollisionInfo;
+	btAlignedObjectArray<btVoxelCollisionInfo> m_voxelCollisionInfo;
 	bool m_isSwapped;
 	btVector3i m_lastMin;
 	btVector3i m_lastMax;
