@@ -428,9 +428,9 @@ void PhysicsWorld::RaycastSingle(PhysicsRaycastResult& result, const Ray& ray, f
 
         btVector3i voxelPosition;
         rayCallback.m_collisionObject->getVoxelPosition(voxelPosition);
-        result.voxelPosition.x_ =  voxelPosition.x;
-        result.voxelPosition.y_ =  voxelPosition.y;
-        result.voxelPosition.z_ =  voxelPosition.z;
+        result.voxelPosition.x_ = (rayCallback.m_shapePart>>16)&0xFF;
+        result.voxelPosition.y_ = (rayCallback.m_shapePart>>8)&0xFF;
+        result.voxelPosition.z_ = (rayCallback.m_shapePart>>0)&0xFF;
     }
     else
     {

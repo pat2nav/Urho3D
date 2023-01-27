@@ -199,6 +199,7 @@ public:
 		const btCollisionObject* m_collisionObject;
 		int m_collisionFilterGroup;
 		int m_collisionFilterMask;
+		int m_shapePart;
 		//@BP Mod - Custom flags, currently used to enable backface culling on tri-meshes, see btRaycastCallback.h. Apply any of the EFlags defined there on m_flags here to invoke.
 		unsigned int m_flags;
 
@@ -251,6 +252,7 @@ public:
 			btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
 			m_closestHitFraction = rayResult.m_hitFraction;
 			m_collisionObject = rayResult.m_collisionObject;
+			m_shapePart = rayResult.m_localShapeInfo->m_shapePart;
 			if (normalInWorldSpace)
 			{
 				m_hitNormalWorld = rayResult.m_hitNormalLocal;
