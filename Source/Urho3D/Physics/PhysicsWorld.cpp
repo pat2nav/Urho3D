@@ -88,6 +88,12 @@ static bool CustomMaterialCombinerCallback(btManifoldPoint& cp, const btCollisio
         btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
     }
 
+    if (shapeType == VOXEL_SHAPE_PROXYTYPE)
+    {
+        //-> get friction
+    }
+
+
     cp.m_combinedFriction = colObj0Wrap->getCollisionObject()->getFriction() * colObj1Wrap->getCollisionObject()->getFriction();
     cp.m_combinedRestitution =
         colObj0Wrap->getCollisionObject()->getRestitution() * colObj1Wrap->getCollisionObject()->getRestitution();
@@ -392,11 +398,6 @@ void PhysicsWorld::Raycast(PODVector<PhysicsRaycastResult>& result, const Ray& r
         newResult.distance_ = (newResult.position_ - ray.origin_).Length();
         newResult.hitFraction_ = rayCallback.m_closestHitFraction;
         
-        btVector3i voxelPosition;
-        rayCallback.m_collisionObjects[i]->getVoxelPosition(voxelPosition);
-        newResult.voxelPosition.x_ =  voxelPosition.x;
-        newResult.voxelPosition.y_ =  voxelPosition.y;
-        newResult.voxelPosition.z_ =  voxelPosition.z;
 
         result.Push(newResult);
     }
@@ -425,12 +426,7 @@ void PhysicsWorld::RaycastSingle(PhysicsRaycastResult& result, const Ray& ray, f
         result.distance_ = (result.position_ - ray.origin_).Length();
         result.hitFraction_ = rayCallback.m_closestHitFraction;
         result.body_ = static_cast<RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
-
-        btVector3i voxelPosition;
-        rayCallback.m_collisionObject->getVoxelPosition(voxelPosition);
-        result.voxelPosition.x_ = (rayCallback.m_shapePart>>16)&0xFF;
-        result.voxelPosition.y_ = (rayCallback.m_shapePart>>8)&0xFF;
-        result.voxelPosition.z_ = (rayCallback.m_shapePart>>0)&0xFF;
+        result.shapePart_ = rayCallback.m_shapePart;
     }
     else
     {

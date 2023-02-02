@@ -32,7 +32,6 @@ struct btCollisionShapeData;
 #include "LinearMath/btAlignedAllocator.h"
 #include "LinearMath/btAlignedObjectArray.h"
 
-#include "BulletCollision/CollisionDispatch/btVoxelCollisionAlgorithm.h"
 
 typedef btAlignedObjectArray<class btCollisionObject*> btCollisionObjectArray;
 
@@ -124,7 +123,6 @@ protected:
 
 	btVector3 m_customDebugColorRGB;
 
-	btVector3i m_voxelPosition;
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
@@ -560,19 +558,6 @@ public:
 		m_userIndex3 = index;
 	}
 
-	void setVoxelPosition(const btVector3i& pos){
-		m_collisionFlags |= CF_VOXEL_OBJECT;
-		m_voxelPosition = pos;
-	}
-
-	bool getVoxelPosition(btVector3i& voxelPosition)const{
-		bool hasVoxel = (0 != (m_collisionFlags & CF_VOXEL_OBJECT));
-		if (hasVoxel)
-		{
-			voxelPosition = m_voxelPosition;
-		}
-		return hasVoxel;
-	}
 
 	int getUpdateRevisionInternal() const
 	{

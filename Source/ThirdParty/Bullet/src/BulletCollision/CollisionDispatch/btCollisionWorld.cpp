@@ -13,7 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <BulletCollision/CollisionShapes/btVoxelShape.h>
 #include "btCollisionWorld.h"
 #include "btCollisionDispatcher.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
@@ -24,6 +23,7 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"        //for raycasting
 #include "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h"  //for raycasting
 #include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"     //for raycasting
+#include "BulletCollision/CollisionShapes/btVoxelTerrainShape.h"		    //for raycasting
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "BulletCollision/CollisionShapes/btCompoundShape.h"
 #include "BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.h"
@@ -37,7 +37,6 @@ subject to the following restrictions:
 #include "LinearMath/btSerializer.h"
 #include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h"
-#include "BulletCollision/CollisionDispatch/btVoxelCollisionAlgorithm.h"
 
 //#define DISABLE_DBVT_COMPOUNDSHAPE_RAYCAST_ACCELERATION
 
@@ -427,6 +426,18 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
 				heightField->performRaycast(&rcb, rayFromLocal, rayToLocal);
 			}
+			else if (collisionShape->getShapeType() == VOXEL_SHAPE_PROXYTYPE)
+			{
+				btVoxelTerrainShape* voxel = (btVoxelTerrainShape*)collisionShape;
+				btTransform worldTocollisionObject = colObjWorldTransform.inverse();
+				btVector3 rayFromLocal = worldTocollisionObject * rayFromTrans.getOrigin();
+				btVector3 rayToLocal = worldTocollisionObject * rayToTrans.getOrigin();
+				
+				BridgeTriangleRaycastCallback rcb(rayFromLocal, rayToLocal, &resultCallback, collisionObjectWrap->getCollisionObject(), voxel, colObjWorldTransform);
+				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
+				
+				voxel->performRaycast(&rcb, rayFromLocal, rayToLocal);
+			}
 			else
 			{
 				//generic (slower) case
@@ -592,131 +603,6 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 					{
 						rayCB.ProcessLeaf(i);
 					}
-				}
-			}
-			else if (collisionShape->isVoxel())
-			{
-				const btVoxelShape* voxelShape = static_cast<const btVoxelShape*>(collisionShape);
-				const btVoxelContentProvider* contentProvider = voxelShape->getContentProvider();
-				const btScalar sf = voxelShape->getScaleFactor();
-
-				int currentVox[3];
-				btVector3 distance;
-				btVector3 delta;
-				btVector3 tNext;
-				int steps = 1;
-				int increments[3];
-
-				
-				/*currentVox[0] = static_cast<int>(floor(rayFromTrans.getOrigin()[0]*sf));
-				currentVox[1] = static_cast<int>(floor(rayFromTrans.getOrigin()[1]*sf));
-				currentVox[2] = static_cast<int>(floor(rayFromTrans.getOrigin()[2]*sf));*/
-
-
-			/*	for (int i = 0; i < 3; ++i)
-				{
-					float rft = (rayFromTrans.getOrigin()[i]+0.5) * sf;
-
-
-					currentVox[i] = static_cast<int>(floor(rft));
-					distance[i] = btFabs(rayToTrans.getOrigin()[i] - rayFromTrans.getOrigin()[i]);
-					delta[i] = 1.0f / distance[i];
-					float alignedOrigin = (currentVox[i] + 0.5f)*sf;
-
-					if (rayToTrans.getOrigin()[i] > rayFromTrans.getOrigin()[i])
-					{
-						increments[i] = 1;
-						steps += static_cast<int>(floor(rft)) - currentVox[i];
-						tNext[i] = (alignedOrigin - rayFromTrans.getOrigin()[i]) * delta[i];
-					}
-					else if (rayToTrans.getOrigin()[i] < rayFromTrans.getOrigin()[i])
-					{
-						increments[i] = -1;
-						steps += currentVox[i] - static_cast<int>(floor(rft));
-						tNext[i] = (rayFromTrans.getOrigin()[i] - alignedOrigin) * delta[i];
-					}
-					else
-					{
-						increments[i] = 0;
-						tNext[i] = delta[i];
-					}
-				}*/
-
-
-				for (int i = 0; i < 3; ++i)
-				{
-					const float start = rayFromTrans.getOrigin()[i];
-					const float end = rayToTrans.getOrigin()[i];
-
-					// Calculate current voxel
-					int startVoxel = static_cast<int>(floor(start / sf));
-					int endVoxel = static_cast<int>(floor(end / sf));
-					currentVox[i] = startVoxel;
-
-					distance[i] = btFabs(end - start);
-					delta[i] = 1 / distance[i];
-
-					if (end > start)
-					{
-						increments[i] = 1;
-						steps += endVoxel - currentVox[i];
-						tNext[i] = ((currentVox[i] + 1) * sf - start) * delta[i];
-					}
-					else if(end < start)
-					{
-						increments[i] = -1;
-						steps += currentVox[i] - endVoxel;
-						tNext[i] = (start - (currentVox[i]) * sf) * delta[i];
-					}
-					else
-					{
-						increments[i] = 0;
-						tNext[i] = delta[i];
-					}
-				}
-
-
-				for (; steps > 0; --steps)
-				{
-					btVoxelInfo childInfo;
-					contentProvider->getVoxel(currentVox[0], currentVox[1], currentVox[2], childInfo);
-					if (childInfo.m_tracable)
-					{
-						btVector3 pos(static_cast<btScalar>(currentVox[0]), static_cast<btScalar>(currentVox[1]),
-									  static_cast<btScalar>(currentVox[2]));
-						pos += childInfo.m_collisionOffset;
-
-						btTransform childTransform(btQuaternion(0, 0, 0, 1), pos*sf);
-
-						btCollisionObjectWrapper tmpOb(collisionObjectWrap, childInfo.m_collisionShape,
-													   collisionObjectWrap->getCollisionObject(), childTransform, -1, -1);
-
-						btCollisionObject* tmpCollision = const_cast<btCollisionObject*>(collisionObjectWrap->getCollisionObject());
-						tmpCollision->setFriction(childInfo.m_friction);
-						tmpCollision->setRestitution(childInfo.m_restitution);
-						tmpCollision->setRollingFriction(childInfo.m_rollingFriction);
-						tmpCollision->setVoxelPosition(btVector3i(currentVox[0],currentVox[1],currentVox[2]));
-
-						rayTestSingleInternal(rayFromTrans, rayToTrans,
-											  &tmpOb,
-											  resultCallback);
-
-                        if(resultCallback.hasHit()) {
-                            return;
-						}
-					}
-
-					int next;
-					if (tNext[0] < tNext[1])
-					{
-						next = (tNext[0] < tNext[2]) ? 0 : 2;
-					}
-					else
-					{
-						next = (tNext[1] < tNext[2]) ? 1 : 2;
-					}
-					tNext[next] += delta[next]*sf;
-					currentVox[next] += increments[next];
 				}
 			}
 		}
@@ -1044,52 +930,6 @@ void btCollisionWorld::objectQuerySingleInternal(const btConvexShape* castShape,
 						const btCollisionShape* childCollisionShape = compoundShape->getChildShape(i);
 						btTransform childTrans = compoundShape->getChildTransform(i);
 						callback.ProcessChild(i, childTrans, childCollisionShape);
-					}
-				}
-			}
-			else {
-				if (collisionShape->isVoxel()) {
-					const btVoxelShape* voxelShape = static_cast<const btVoxelShape*>(collisionShape);
-					const btVoxelContentProvider* contentProvider = voxelShape->getContentProvider();
-
-					btVector3 minAABBfrom;
-					btVector3 maxAABBfrom;
-					btVector3 minAABBto;
-					btVector3 maxAABBto;
-					castShape->getAabb(convexFromTrans, minAABBfrom, maxAABBfrom);
-					castShape->getAabb(convexToTrans, minAABBto, maxAABBto);
-
-					minAABBfrom.setMin(minAABBto);
-					maxAABBfrom.setMax(maxAABBto);
-					
-					int min[3];
-					int max[3];
-					for (int i = 0; i < 3; ++i) {
-						min[i] = static_cast <int> (floor(minAABBfrom[i] + 0.5f));
-						max[i] = static_cast <int> (floor(maxAABBfrom[i] + 0.5f));
-					}
-
-					for (int x = min[0]; x <= max[0]; ++x) {
-						for (int y = min[1]; y <= max[1]; ++y) {
-							for (int z = min[2]; z <= max[2]; ++z) {
-								btVoxelInfo info;
-								contentProvider->getVoxel(x, y, z, info);
-								if (info.m_blocking) {
-									btVector3 pos(static_cast <btScalar>(x), static_cast <btScalar> (y), static_cast<btScalar> (z));
-									pos += info.m_collisionOffset;
-									btTransform voxelTransform(btQuaternion(0, 0, 0, 1), pos);
-									btCollisionObjectWrapper tmpOb(colObjWrap, info.m_collisionShape, colObjWrap->getCollisionObject(), voxelTransform, -1, -1);
-
-									btCollisionObject* tmpCollision = const_cast<btCollisionObject*>(colObjWrap->getCollisionObject());
-									tmpCollision->setFriction(info.m_friction);
-									tmpCollision->setRestitution(info.m_restitution);
-									tmpCollision->setRollingFriction(info.m_rollingFriction);
-									tmpCollision->setVoxelPosition(btVector3i(x,y,z));
-														
-									objectQuerySingleInternal(castShape, convexFromTrans, convexToTrans, &tmpOb, resultCallback, allowedPenetration);
-								}
-							}
-						}
 					}
 				}
 			}

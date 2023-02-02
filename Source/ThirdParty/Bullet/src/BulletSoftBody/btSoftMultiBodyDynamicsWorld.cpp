@@ -18,7 +18,6 @@ subject to the following restrictions:
 
 //softbody & helpers
 #include "BulletSoftBody/btSoftBody.h"
-#include "BulletCollision/CollisionShapes/btVoxelShape.h"
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "BulletSoftBody/btSoftBodySolvers.h"
 #include "BulletSoftBody/btDefaultSoftBodySolver.h"

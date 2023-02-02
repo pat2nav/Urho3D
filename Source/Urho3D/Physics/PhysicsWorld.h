@@ -76,7 +76,7 @@ struct URHO3D_API PhysicsRaycastResult
     float hitFraction_{};
     /// Rigid body that was hit.
     RigidBody* body_{};
-    IntVector3 voxelPosition;
+    int shapePart_;
 };
 
 /// Delayed world transform assignment for parented rigidbodies.

@@ -24,7 +24,6 @@ subject to the following restrictions:
 #include "LinearMath/btPoolAllocator.h"
 #include "BulletCollision/CollisionDispatch/btCollisionConfiguration.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h"
-#include "BulletCollision/CollisionShapes/btVoxelShape.h"
 
 #ifdef BT_DEBUG
 #include <stdio.h>

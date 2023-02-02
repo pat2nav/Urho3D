@@ -23,7 +23,6 @@ subject to the following restrictions:
 #include "LinearMath/btAabbUtil2.h"
 #include "BulletCollision/CollisionDispatch/btManifoldResult.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObjectWrapper.h"
-#include "BulletCollision/CollisionShapes/btVoxelShape.h"
 
 //USE_LOCAL_STACK will avoid most (often all) dynamic memory allocations due to resizing in processCollision and MycollideTT
 #define USE_LOCAL_STACK 1

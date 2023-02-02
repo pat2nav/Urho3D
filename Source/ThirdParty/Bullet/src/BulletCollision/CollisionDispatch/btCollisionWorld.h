@@ -74,7 +74,6 @@ class btConvexShape;
 class btBroadphaseInterface;
 class btSerializer;
 
-#include "BulletCollision/CollisionShapes/btVoxelShape.h"
 #include "LinearMath/btVector3.h"
 #include "LinearMath/btTransform.h"
 #include "btCollisionObject.h"

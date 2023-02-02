@@ -29,7 +29,6 @@ subject to the following restrictions:
 #include "LinearMath/btIDebugDraw.h"
 #include "BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.h"
 #include "BulletSoftBody/btSoftBody.h"
-#include "BulletCollision/CollisionShapes/btVoxelShape.h"
 
 #define BT_SOFTBODY_TRIANGLE_EXTRUSION btScalar(0.06)  //make this configurable
 

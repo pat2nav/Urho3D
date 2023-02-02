@@ -76,9 +76,7 @@ protected:
 	btCollisionAlgorithmCreateFunc* m_planeConvexCF;
 	btCollisionAlgorithmCreateFunc* m_convexPlaneCF;
 
-	btCollisionAlgorithmCreateFunc*	m_voxelCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_swappedVoxelCreateFunc;
-	
+
 public:
 	btDefaultCollisionConfiguration(const btDefaultCollisionConstructionInfo& constructionInfo = btDefaultCollisionConstructionInfo());
 
