@@ -251,7 +251,12 @@ public:
 			btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
 			m_closestHitFraction = rayResult.m_hitFraction;
 			m_collisionObject = rayResult.m_collisionObject;
-			m_shapePart = rayResult.m_localShapeInfo->m_shapePart;
+			
+			if(rayResult.m_localShapeInfo)
+			{
+				m_shapePart = rayResult.m_localShapeInfo->m_shapePart;
+			}
+
 			if (normalInWorldSpace)
 			{
 				m_hitNormalWorld = rayResult.m_hitNormalLocal;
