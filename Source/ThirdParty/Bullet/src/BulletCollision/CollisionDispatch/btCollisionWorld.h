@@ -339,6 +339,7 @@ public:
 		btScalar m_closestHitFraction;
 		int m_collisionFilterGroup;
 		int m_collisionFilterMask;
+		int m_shapePart;
 
 		ConvexResultCallback()
 			: m_closestHitFraction(btScalar(1.)),
@@ -390,6 +391,12 @@ public:
 
 			m_closestHitFraction = convexResult.m_hitFraction;
 			m_hitCollisionObject = convexResult.m_hitCollisionObject;
+
+			if(convexResult.m_localShapeInfo)
+			{
+				m_shapePart = convexResult.m_localShapeInfo->m_shapePart;
+			}
+
 			if (normalInWorldSpace)
 			{
 				m_hitNormalWorld = convexResult.m_hitNormalLocal;

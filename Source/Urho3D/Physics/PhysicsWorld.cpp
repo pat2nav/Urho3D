@@ -515,6 +515,7 @@ void PhysicsWorld::SphereCast(PhysicsRaycastResult& result, const Ray& ray, floa
         result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
         result.distance_ = convexCallback.m_closestHitFraction * (endPos - ray.origin_).Length();
         result.hitFraction_ = convexCallback.m_closestHitFraction;
+        result.shapePart_ = convexCallback.m_shapePart;
     }
     else
     {
@@ -523,6 +524,7 @@ void PhysicsWorld::SphereCast(PhysicsRaycastResult& result, const Ray& ray, floa
         result.normal_ = Vector3::ZERO;
         result.distance_ = M_INFINITY;
         result.hitFraction_ = 0.0f;
+        result.shapePart_ = 0;
     }
 }
 
