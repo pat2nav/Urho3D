@@ -157,9 +157,19 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
     while (glyphIndex != 0)
     {
         if (glyphIndex < numGlyphs)
-            charCodes[glyphIndex + 1] = (unsigned)charCode;
+        {
+            FT_ULong charCodeToMap = charCode;
+
+            switch(charCode)
+            {
+            case 0x37E:     charCodeToMap=0x3B;      break;         // Remap ;
+            }
+
+            charCodes[glyphIndex + 1] = (unsigned)charCodeToMap;
+        }
 
         charCode = FT_Get_Next_Char(face, charCode, &glyphIndex);
+
     }
 
     // Load each of the glyphs to see the sizes & store other information
