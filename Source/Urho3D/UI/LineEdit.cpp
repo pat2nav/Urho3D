@@ -60,6 +60,9 @@ LineEdit::LineEdit(Context* context) :
 
     text_ = CreateChild<Text>("LE_Text");
     text_->SetInternal(true);
+//    text_->SetTextAlignment()
+    SetVerticalAlignment(VerticalAlignment::VA_TOP);
+
     cursor_ = CreateChild<BorderImage>("LE_Cursor");
     cursor_->SetInternal(true);
     cursor_->SetPriority(1); // Show over text
@@ -414,6 +417,7 @@ void LineEdit::OnKey(Key key, MouseButtonFlags buttons, QualifierFlags qualifier
             eventData[P_ELEMENT] = this;
             eventData[P_TEXT] = line_;
             SendEvent(E_TEXTFINISHED, eventData);
+            OnTextInput("\n");
             return;
         }
 

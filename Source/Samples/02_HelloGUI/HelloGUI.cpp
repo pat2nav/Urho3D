@@ -90,7 +90,7 @@ void HelloGUI::InitControls()
     // Create a LineEdit
     auto* lineEdit = new LineEdit(context_);
     lineEdit->SetName("LineEdit");
-    lineEdit->SetMinHeight(24);
+    lineEdit->SetMinHeight(60);
 
     // Add controls to Window
     window_->AddChild(checkBox);
