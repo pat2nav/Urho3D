@@ -322,7 +322,8 @@ static void RegisterRenderPath(asIScriptEngine* engine)
     engine->RegisterEnumValue("TextureUnit", "TU_INDIRECTION", TU_INDIRECTION);
     engine->RegisterEnumValue("TextureUnit", "TU_DEPTHBUFFER", TU_DEPTHBUFFER);
     engine->RegisterEnumValue("TextureUnit", "TU_LIGHTBUFFER", TU_LIGHTBUFFER);
-    engine->RegisterEnumValue("TextureUnit", "TU_ZONE", TU_ZONE);
+   // engine->RegisterEnumValue("TextureUnit", "TU_ZONE", TU_ZONE);
+    engine->RegisterEnumValue("TextureUnit", "TU_BLUR", TU_BLUR);
 #endif
     engine->RegisterEnumValue("TextureUnit", "MAX_MATERIAL_TEXTURE_UNITS", MAX_MATERIAL_TEXTURE_UNITS);
     engine->RegisterEnumValue("TextureUnit", "MAX_TEXTURE_UNITS", MAX_TEXTURE_UNITS);
