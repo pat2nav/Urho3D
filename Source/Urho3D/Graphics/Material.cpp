@@ -112,6 +112,8 @@ TextureUnit ParseTextureUnitName(String name)
             unit = TU_SPECULAR;
         else if (name == "env")
             unit = TU_ENVIRONMENT;
+        else if (name == "blur")
+            unit = TU_BLUR;
         // Finally check for specifying the texture unit directly as a number
         else if (name.Length() < 3)
             unit = (TextureUnit)Clamp(ToInt(name), 0, MAX_TEXTURE_UNITS - 1);
