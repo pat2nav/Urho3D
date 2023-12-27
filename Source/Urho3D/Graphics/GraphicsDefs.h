@@ -337,7 +337,7 @@ enum TextureUnit
     TU_INDIRECTION = 12,
     TU_DEPTHBUFFER = 13,
     TU_LIGHTBUFFER = 14,
-    TU_BLUR = 15,
+    TU_ZONE = 15,
     MAX_MATERIAL_TEXTURE_UNITS = 8,
     MAX_TEXTURE_UNITS = 16
 #else
