@@ -161,7 +161,7 @@ void Text::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData,
                 }
                 else
                 {
-                    currentEnd.x_ += charLocations_[i].size_.x_;
+                    currentEnd.x_ = charLocations_[i].position_.x_ + charLocations_[i].size_.x_;
                     currentEnd.y_ = Max(currentStart.y_ + charLocations_[i].size_.y_, currentEnd.y_);
                 }
             }

@@ -657,7 +657,7 @@ void LineEdit::HandleDefocused(StringHash /*eventType*/, VariantMap& /*eventData
 
 void LineEdit::HandleLayoutUpdated(StringHash /*eventType*/, VariantMap& /*eventData*/)
 {
-    UpdateCursor();
+//    UpdateCursor();
 }
 
 }
