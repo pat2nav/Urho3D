@@ -585,8 +585,8 @@ void Batch::Prepare(View* view, Camera* camera, bool setModelTransform, bool all
 
     // Set zone texture if necessary
 #ifndef GL_ES_VERSION_2_0
-//    if (zone_ && graphics->HasTextureUnit(TU_ZONE))
-  //      graphics->SetTexture(TU_ZONE, zone_->GetZoneTexture());
+    if (zone_ && graphics->HasTextureUnit(TU_ZONE))
+       graphics->SetTexture(TU_ZONE, zone_->GetZoneTexture());
 #else
     // On OpenGL ES set the zone texture to the environment unit instead
     if (zone_ && zone_->GetZoneTexture() && graphics->HasTextureUnit(TU_ENVIRONMENT))
