@@ -104,6 +104,13 @@ struct Batch
     ShaderVariation* vertexShader_{};
     /// Pixel shader.
     ShaderVariation* pixelShader_{};
+    /// Geometry shader.
+    ShaderVariation* geometryShader_{};
+    /// Hull shader.
+    ShaderVariation* hullShader_{};
+    /// Domain shader.
+    ShaderVariation* domainShader_{};
+    
     /// %Geometry type.
     GeometryType geometryType_{};
 };
@@ -267,10 +274,29 @@ public:
     String vsExtraDefines_;
     /// Pixel shader extra defines.
     String psExtraDefines_;
+    
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
+    /// Geometry shader extra defines.
+    String gsExtraDefines_;
+    /// Hull/TCS shader extra defines.
+    String hsExtraDefines_;
+    /// Domain/TES shader extra defines.
+    String dsExtraDefines_;
+#endif
+    
     /// Hash for vertex shader extra defines.
     StringHash vsExtraDefinesHash_;
     /// Hash for pixel shader extra defines.
     StringHash psExtraDefinesHash_;
+    
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
+    /// Geometry shader extra defines.
+    StringHash gsExtraDefinesHash_;
+    /// Hull/TCS shader extra defines.
+    StringHash hsExtraDefinesHash_;
+    /// Domain/TES shader extra defines.
+    StringHash dsExtraDefinesHash_;
+#endif
 };
 
 /// Queue for shadow map draw calls

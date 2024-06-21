@@ -72,7 +72,27 @@ bool ShaderVariation::Create()
     // Check for up-to-date bytecode on disk
     String path, name, extension;
     SplitPath(owner_->GetName(), path, name, extension);
-    extension = type_ == VS ? ".vs4" : ".ps4";
+
+    // Using SM5 when compute is available for structured buffer support.
+    const bool usingSM5 = Graphics::GetComputeSupport();
+    switch (type_)
+    {
+    case VS:
+        extension = usingSM5 ? ".vs5" : ".vs4";
+        break;
+    case PS:
+        extension = usingSM5 ? ".ps5" : ".ps4";
+        break;
+    case GS:
+        extension = usingSM5 ? ".gs5" : ".gs4";
+        break;
+    case HS:
+        extension = ".hs5";
+        break;
+    case DS:
+        extension = ".ds5";
+        break;
+    }
 
     String binaryShaderName = graphics_->GetShaderCacheDir() + name + "_" + StringHash(defines_).ToString() + extension;
 
@@ -102,7 +122,7 @@ bool ShaderVariation::Create()
         else
             compilerOutput_ = "Could not create vertex shader, empty bytecode";
     }
-    else
+    else if (type_ == PS)
     {
         if (device && byteCode_.Size())
         {
@@ -115,6 +135,48 @@ bool ShaderVariation::Create()
         }
         else
             compilerOutput_ = "Could not create pixel shader, empty bytecode";
+    }
+    else if (type_ == GS)
+    {
+        if (device && byteCode_.Size())
+        {
+            HRESULT hr = device->CreateGeometryShader(&byteCode_[0], byteCode_.Size(), nullptr, (ID3D11GeometryShader**)&object_.ptr_);
+            if (FAILED(hr))
+            {
+                URHO3D_SAFE_RELEASE(object_.ptr_);
+                compilerOutput_ = "Could not create geometry shader (HRESULT " + ToStringHex((unsigned)hr) + ")";
+            }
+        }
+        else
+            compilerOutput_ = "Could not create geometry shader, empty bytecode";
+    }
+    else if (type_ == HS)
+    {
+        if (device && byteCode_.Size())
+        {
+            HRESULT hr = device->CreateHullShader(&byteCode_[0], byteCode_.Size(), nullptr, (ID3D11HullShader**)&object_.ptr_);
+            if (FAILED(hr))
+            {
+                URHO3D_SAFE_RELEASE(object_.ptr_);
+                compilerOutput_ = "Could not create hull shader (HRESULT " + ToStringHex((unsigned)hr) + ")";
+            }
+        }
+        else
+            compilerOutput_ = "Could not create hull shader, empty bytecode";
+    }
+    else if (type_ == DS)
+    {
+        if (device && byteCode_.Size())
+        {
+            HRESULT hr = device->CreateDomainShader(&byteCode_[0], byteCode_.Size(), nullptr, (ID3D11DomainShader**)&object_.ptr_);
+            if (FAILED(hr))
+            {
+                URHO3D_SAFE_RELEASE(object_.ptr_);
+                compilerOutput_ = "Could not create domain shader (HRESULT " + ToStringHex((unsigned)hr) + ")";
+            }
+        }
+        else
+            compilerOutput_ = "Could not create domain shader, empty bytecode";
     }
 
     return object_.ptr_ != nullptr;
@@ -132,12 +194,27 @@ void ShaderVariation::Release()
         if (type_ == VS)
         {
             if (graphics_->GetVertexShader() == this)
-                graphics_->SetShaders(nullptr, nullptr);
+                graphics_->SetShaders(nullptr, nullptr, nullptr, nullptr, nullptr);
         }
-        else
+        else if (type_ == PS)
         {
             if (graphics_->GetPixelShader() == this)
-                graphics_->SetShaders(nullptr, nullptr);
+                graphics_->SetShaders(nullptr, nullptr, nullptr, nullptr, nullptr);
+        }
+        else if (type_ == GS)
+        {
+            if (graphics_->GetGeometryShader() == this)
+                graphics_->SetShaders(nullptr, nullptr, nullptr, nullptr, nullptr);
+        }
+        else if (type_ == HS)
+        {
+            if (graphics_->GetHullShader() == this)
+                graphics_->SetShaders(nullptr, nullptr, nullptr, nullptr, nullptr);
+        }
+        else if (type_ == DS)
+        {
+            if (graphics_->GetDomainShader() == this)
+                graphics_->SetShaders(nullptr, nullptr, nullptr, nullptr, nullptr);
         }
 
         URHO3D_SAFE_RELEASE(object_.ptr_);
@@ -219,8 +296,14 @@ bool ShaderVariation::LoadByteCode(const String& binaryShaderName)
 
         if (type_ == VS)
             URHO3D_LOGDEBUG("Loaded cached vertex shader " + GetFullName());
-        else
+        else if (type_ == PS)
             URHO3D_LOGDEBUG("Loaded cached pixel shader " + GetFullName());
+        else if (type_ == GS)
+            URHO3D_LOGDEBUG("Loaded cached geometry shader " + GetFullName());
+        else if (type_ == HS)
+            URHO3D_LOGDEBUG("Loaded cached hull shader " + GetFullName());
+        else if (type_ == DS)
+            URHO3D_LOGDEBUG("Loaded cached domain shader " + GetFullName());
 
         CalculateConstantBufferSizes();
         return true;
@@ -244,18 +327,38 @@ bool ShaderVariation::Compile()
 
     defines.Push("D3D11");
 
+    // If compute is supported then the v5 profiles will be used, which add structured buffer support
+    const bool shouldUseV5 = Graphics::GetComputeSupport();
     if (type_ == VS)
     {
         entryPoint = "VS";
         defines.Push("COMPILEVS");
-        profile = "vs_4_0";
+        profile = shouldUseV5 ? "vs_5_0" : "vs_4_0";
     }
-    else
+    else if (type_ == PS)
     {
         entryPoint = "PS";
         defines.Push("COMPILEPS");
-        profile = "ps_4_0";
+        profile = shouldUseV5 ? "ps_5_0" : "ps_4_0";
         flags |= D3DCOMPILE_PREFER_FLOW_CONTROL;
+    }
+    else if (type_ == GS)
+    {
+        entryPoint = "GS";
+        defines.Push("COMPILEGS");
+        profile = shouldUseV5 ? "gs_5_0" : "gs_4_0";
+    }
+    else if (type_ == HS)
+    {
+        entryPoint = "HS";
+        defines.Push("COMPILEHS");
+        profile = "hs_5_0";
+    }
+    else if (type_ == DS) 
+    {
+        entryPoint = "DS";
+        defines.Push("COMPILEDS");
+        profile = "ds_5_0";
     }
 
     defines.Push("MAXBONES=" + String(Graphics::GetMaxBones()));
@@ -309,8 +412,14 @@ bool ShaderVariation::Compile()
     {
         if (type_ == VS)
             URHO3D_LOGDEBUG("Compiled vertex shader " + GetFullName());
-        else
+        else if (type_ == PS)
             URHO3D_LOGDEBUG("Compiled pixel shader " + GetFullName());
+        else if (type_ == GS)
+            URHO3D_LOGDEBUG("Compiled geometry shader " + GetFullName());
+        else if (type_ == HS)
+            URHO3D_LOGDEBUG("Compiled hull shader " + GetFullName());
+        else if (type_ == DS)
+            URHO3D_LOGDEBUG("Compiled domain shader " + GetFullName());
 
         unsigned char* bufData = (unsigned char*)shaderCode->GetBufferPointer();
         unsigned bufSize = (unsigned)shaderCode->GetBufferSize();

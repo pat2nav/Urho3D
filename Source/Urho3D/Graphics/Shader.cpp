@@ -96,13 +96,47 @@ bool Shader::BeginLoad(Deserializer& source)
     // Comment out the unneeded shader function
     vsSourceCode_ = shaderCode;
     psSourceCode_ = shaderCode;
+    gsSourceCode_ = shaderCode;
+    hsSourceCode_ = shaderCode;
+    dsSourceCode_ = shaderCode;
+
+    // VS
     CommentOutFunction(vsSourceCode_, "void PS(");
+    CommentOutFunction(vsSourceCode_, "void GS(");
+    CommentOutFunction(vsSourceCode_, "void HS(");
+    CommentOutFunction(vsSourceCode_, "void DS(");
+    
+    // PS
     CommentOutFunction(psSourceCode_, "void VS(");
+    CommentOutFunction(psSourceCode_, "void GS(");
+    CommentOutFunction(psSourceCode_, "void HS(");
+    CommentOutFunction(psSourceCode_, "void DS(");
+    
+    // GS
+    CommentOutFunction(gsSourceCode_, "void PS(");
+    CommentOutFunction(gsSourceCode_, "void VS(");
+    CommentOutFunction(gsSourceCode_, "void HS(");
+    CommentOutFunction(gsSourceCode_, "void DS(");
+    
+    // HS
+    CommentOutFunction(hsSourceCode_, "void PS(");
+    CommentOutFunction(hsSourceCode_, "void VS(");
+    CommentOutFunction(hsSourceCode_, "void GS(");
+    CommentOutFunction(hsSourceCode_, "void DS(");
+    
+    // DS
+    CommentOutFunction(dsSourceCode_, "void PS(");
+    CommentOutFunction(dsSourceCode_, "void VS(");
+    CommentOutFunction(dsSourceCode_, "void GS(");
+    CommentOutFunction(dsSourceCode_, "void HS(");
 
     // OpenGL: rename either VS() or PS() to main()
 #ifdef URHO3D_OPENGL
     vsSourceCode_.Replace("void VS(", "void main(");
     psSourceCode_.Replace("void PS(", "void main(");
+    gsSourceCode_.Replace("void GS(", "void main(");
+    hsSourceCode_.Replace("void HS(", "void main(");
+    dsSourceCode_.Replace("void DS(", "void main(");
 #endif
 
     RefreshMemoryUse();
@@ -116,6 +150,12 @@ bool Shader::EndLoad()
         i->second_->Release();
     for (HashMap<StringHash, SharedPtr<ShaderVariation> >::Iterator i = psVariations_.Begin(); i != psVariations_.End(); ++i)
         i->second_->Release();
+    for (HashMap<StringHash, SharedPtr<ShaderVariation> >::Iterator i = gsVariations_.Begin(); i != gsVariations_.End(); ++i)
+        i->second_->Release();
+    for (HashMap<StringHash, SharedPtr<ShaderVariation> >::Iterator i = hsVariations_.Begin(); i != hsVariations_.End(); ++i)
+        i->second_->Release();
+    for (HashMap<StringHash, SharedPtr<ShaderVariation> >::Iterator i = dsVariations_.Begin(); i != dsVariations_.End(); ++i)
+        i->second_->Release();
 
     return true;
 }
@@ -123,6 +163,24 @@ bool Shader::EndLoad()
 ShaderVariation* Shader::GetVariation(ShaderType type, const String& defines)
 {
     return GetVariation(type, defines.CString());
+}
+
+const String& Shader::GetSourceCode(ShaderType type) const
+{
+    switch (type)
+    {
+    case VS:
+        return vsSourceCode_;
+    case PS:
+        return psSourceCode_;
+    case GS:
+        return gsSourceCode_;
+    case HS:
+        return hsSourceCode_;
+    case DS:
+        return dsSourceCode_;
+    }
+    return vsSourceCode_;
 }
 
 ShaderVariation* Shader::GetVariation(ShaderType type, const char* defines)

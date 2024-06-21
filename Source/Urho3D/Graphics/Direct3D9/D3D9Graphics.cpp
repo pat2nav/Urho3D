@@ -250,6 +250,9 @@ static unsigned readableDepthFormat = 0;
 
 const Vector2 Graphics::pixelUVOffset(0.5f, 0.5f);
 bool Graphics::gl3Support = false;
+bool Graphics::tessellationSupport = false;
+bool Graphics::geometryShaderSupport = false;
+bool Graphics::computeSupport = false;
 
 Graphics::Graphics(Context* context) :
     Object(context),
@@ -1157,6 +1160,16 @@ void Graphics::SetShaders(ShaderVariation* vs, ShaderVariation* ps)
     if (vs == vertexShader_ && ps == pixelShader_)
         return;
 
+    if (gs || tes || tcs)
+    {
+        if (gs)
+            URHO3D_LOGERROR("Attempted to set a geometry shader on D3D9");
+        if (tcs)
+            URHO3D_LOGERROR("Attempted to set a Hull/TCS shader on D3D9");
+        if (tes)
+            URHO3D_LOGERROR("Attempted to set a Domain/TES shader on D3D9");
+    }
+
     ClearParameterSources();
 
     if (vs != vertexShader_)
@@ -1238,7 +1251,7 @@ void Graphics::SetShaders(ShaderVariation* vs, ShaderVariation* ps)
 
     // Store shader combination if shader dumping in progress
     if (shaderPrecache_)
-        shaderPrecache_->StoreShaders(vertexShader_, pixelShader_);
+        shaderPrecache_->StoreShaders(vertexShader_, pixelShader_, nullptr, nullptr, nullptr);
 }
 
 void Graphics::SetShaderParameter(StringHash param, const float* data, unsigned count)
@@ -2304,6 +2317,21 @@ bool Graphics::GetGL3Support()
     return gl3Support;
 }
 
+bool Graphics::GetTessellationSupport()
+{
+    return tessellationSupport;
+}
+
+bool Graphics::GetGeometryShaderSupport()
+{
+    return geometryShaderSupport;
+}
+
+bool Graphics::GetComputeSupport()
+{
+    return computeSupport;
+}
+
 void Graphics::SetStreamFrequency(unsigned index, unsigned frequency)
 {
     if (index < MAX_VERTEX_STREAMS && impl_->streamFrequencies_[index] != frequency)
@@ -2646,6 +2674,9 @@ void Graphics::ResetCachedState()
     indexBuffer_ = nullptr;
     vertexShader_ = nullptr;
     pixelShader_ = nullptr;
+    geometryShader_ = nullptr;
+    hullShader_ = nullptr;
+    domainShader_ = nullptr;
     blendMode_ = BLEND_REPLACE;
     alphaToCoverage_ = false;
     colorWrite_ = true;

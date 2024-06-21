@@ -411,6 +411,9 @@ bool Material::Load(const XMLElement& source)
     {
         vertexShaderDefines_ = shaderElem.GetAttribute("vsdefines");
         pixelShaderDefines_ = shaderElem.GetAttribute("psdefines");
+        geometryShaderDefines_ = shaderElem.GetAttribute("gsdefines");
+        hullShaderDefines_ = shaderElem.GetAttribute("hsdefines");
+        domainShaderDefines_ = shaderElem.GetAttribute("dsdefines");
     }
 
     XMLElement techniqueElem = source.GetChild("technique");
@@ -562,6 +565,9 @@ bool Material::Load(const JSONValue& source)
     {
         vertexShaderDefines_ = shaderVal.Get("vsdefines").GetString();
         pixelShaderDefines_ = shaderVal.Get("psdefines").GetString();
+        geometryShaderDefines_ = shaderVal.Get("gsdefines").GetString();
+        hullShaderDefines_ = shaderVal.Get("hsdefines").GetString();
+        domainShaderDefines_ = shaderVal.Get("dsdefines").GetString();
     }
 
     // Load techniques
@@ -740,13 +746,19 @@ bool Material::Save(XMLElement& dest) const
     }
 
     // Write shader compile defines
-    if (!vertexShaderDefines_.Empty() || !pixelShaderDefines_.Empty())
+    if (!vertexShaderDefines_.Empty() || !pixelShaderDefines_.Empty() || !geometryShaderDefines_.Empty() || !hullShaderDefines_.Empty() || !domainShaderDefines_.Empty())
     {
         XMLElement shaderElem = dest.CreateChild("shader");
         if (!vertexShaderDefines_.Empty())
             shaderElem.SetString("vsdefines", vertexShaderDefines_);
         if (!pixelShaderDefines_.Empty())
             shaderElem.SetString("psdefines", pixelShaderDefines_);
+        if (!geometryShaderDefines_.Empty())
+            shaderElem.SetString("gsdefines", geometryShaderDefines_);
+        if (!hullShaderDefines_.Empty())
+            shaderElem.SetString("hsdefines", hullShaderDefines_);
+        if (!domainShaderDefines_.Empty())
+            shaderElem.SetString("dsdefines", domainShaderDefines_);
     }
 
     // Write shader parameters
@@ -843,13 +855,19 @@ bool Material::Save(JSONValue& dest) const
     dest.Set("textures", texturesValue);
 
     // Write shader compile defines
-    if (!vertexShaderDefines_.Empty() || !pixelShaderDefines_.Empty())
+    if (!vertexShaderDefines_.Empty() || !pixelShaderDefines_.Empty() || !geometryShaderDefines_.Empty() || !hullShaderDefines_.Empty() || !domainShaderDefines_.Empty())
     {
         JSONValue shaderVal;
         if (!vertexShaderDefines_.Empty())
             shaderVal.Set("vsdefines", vertexShaderDefines_);
         if (!pixelShaderDefines_.Empty())
             shaderVal.Set("psdefines", pixelShaderDefines_);
+        if (!geometryShaderDefines_.Empty())
+            shaderVal.Set("gsdefines", geometryShaderDefines_);
+        if (!hullShaderDefines_.Empty())
+            shaderVal.Set("hsdefines", hullShaderDefines_);
+        if (!domainShaderDefines_.Empty())
+            shaderVal.Set("dsdefines", domainShaderDefines_);
         dest.Set("shader", shaderVal);
     }
 
@@ -946,6 +964,33 @@ void Material::SetPixelShaderDefines(const String& defines)
     if (defines != pixelShaderDefines_)
     {
         pixelShaderDefines_ = defines;
+        ApplyShaderDefines();
+    }
+}
+
+void Material::SetGeometryShaderDefines(const String& defines)
+{
+    if (defines != geometryShaderDefines_)
+    {
+        geometryShaderDefines_ = defines;
+        ApplyShaderDefines();
+    }
+}
+
+void Material::SetHullShaderDefines(const String& defines)
+{
+    if (defines != hullShaderDefines_)
+    {
+        hullShaderDefines_ = defines;
+        ApplyShaderDefines();
+    }
+}
+
+void Material::SetDomainShaderDefines(const String& defines)
+{
+    if (defines != domainShaderDefines_)
+    {
+        domainShaderDefines_ = defines;
         ApplyShaderDefines();
     }
 }
@@ -1151,8 +1196,14 @@ SharedPtr<Material> Material::Clone(const String& cloneName) const
     ret->techniques_ = techniques_;
     ret->vertexShaderDefines_ = vertexShaderDefines_;
     ret->pixelShaderDefines_ = pixelShaderDefines_;
+    ret->geometryShaderDefines_ = geometryShaderDefines_;
+    ret->hullShaderDefines_ = hullShaderDefines_;
+    ret->domainShaderDefines_ = domainShaderDefines_;
+
     ret->shaderParameters_ = shaderParameters_;
     ret->shaderParameterHash_ = shaderParameterHash_;
+
+
     ret->textures_ = textures_;
     ret->depthBias_ = depthBias_;
     ret->alphaToCoverage_ = alphaToCoverage_;
@@ -1251,6 +1302,9 @@ void Material::ResetToDefaults()
 
     vertexShaderDefines_.Clear();
     pixelShaderDefines_.Clear();
+    geometryShaderDefines_.Clear();
+    hullShaderDefines_.Clear();
+    domainShaderDefines_.Clear();
 
     SetNumTechniques(1);
     auto* renderer = GetSubsystem<Renderer>();
@@ -1375,10 +1429,10 @@ void Material::ApplyShaderDefines(unsigned index)
     if (index >= techniques_.Size() || !techniques_[index].original_)
         return;
 
-    if (vertexShaderDefines_.Empty() && pixelShaderDefines_.Empty())
+    if (vertexShaderDefines_.Empty() && pixelShaderDefines_.Empty() && geometryShaderDefines_.Empty() && hullShaderDefines_.Empty() && domainShaderDefines_.Empty())
         techniques_[index].technique_ = techniques_[index].original_;
     else
-        techniques_[index].technique_ = techniques_[index].original_->CloneWithDefines(vertexShaderDefines_, pixelShaderDefines_);
+        techniques_[index].technique_ = techniques_[index].original_->CloneWithDefines(vertexShaderDefines_, pixelShaderDefines_, geometryShaderDefines_, hullShaderDefines_, domainShaderDefines_);
 }
 
 }

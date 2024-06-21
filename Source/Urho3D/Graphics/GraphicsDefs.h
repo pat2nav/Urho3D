@@ -48,7 +48,10 @@ enum PrimitiveType
     POINT_LIST,
     TRIANGLE_STRIP,
     LINE_STRIP,
-    TRIANGLE_FAN
+    TRIANGLE_FAN,
+    LINE_LIST_ADJ,
+    TRIANGLE_LIST_ADJ,
+    QUAD_PATCH,
 };
 
 /// %Geometry type for vertex shader geometry variations.
@@ -296,11 +299,14 @@ enum RenderSurfaceUpdateMode
     SURFACE_UPDATEALWAYS
 };
 
-/// Shader types.
+/// Shader types, using OpenGL naming convention for tessellation stages.
 enum ShaderType
 {
     VS = 0,
     PS,
+    GS,
+    HS,
+    DS
 };
 
 /// Shader parameter groups for determining need to update. On APIs that support constant buffers, these correspond to different constant buffers.

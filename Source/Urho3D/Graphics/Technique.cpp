@@ -144,6 +144,23 @@ void Pass::SetPixelShader(const String& name)
     ReleaseShaders();
 }
 
+void Pass::SetGeometryShader(const String& name)
+{
+    geometryShaderName_ = name;
+    ReleaseShaders();
+}
+
+void Pass::SetHullShader(const String& name)
+{
+    hullShaderName_ = name;
+    ReleaseShaders();
+}
+
+void Pass::SetDomainShader(const String& name)
+{
+    domainShaderName_ = name;
+    ReleaseShaders();
+}
 void Pass::SetVertexShaderDefines(const String& defines)
 {
     vertexShaderDefines_ = defines;
@@ -153,6 +170,24 @@ void Pass::SetVertexShaderDefines(const String& defines)
 void Pass::SetPixelShaderDefines(const String& defines)
 {
     pixelShaderDefines_ = defines;
+    ReleaseShaders();
+}
+
+void Pass::SetGeometryShaderDefines(const String& defines)
+{
+    geometryShaderDefines_ = defines;
+    ReleaseShaders();
+}
+
+void Pass::SetHullShaderDefines(const String& defines)
+{
+    hullShaderDefines_ = defines;
+    ReleaseShaders();
+}
+
+void Pass::SetDomainShaderDefines(const String& defines)
+{
+    domainShaderDefines_ = defines;
     ReleaseShaders();
 }
 
@@ -168,12 +203,37 @@ void Pass::SetPixelShaderDefineExcludes(const String& excludes)
     ReleaseShaders();
 }
 
+void Pass::SetGeometryShaderDefineExcludes(const String& excludes)
+{
+    geometryShaderDefineExcludes_ = excludes;
+    ReleaseShaders();
+}
+
+void Pass::SetHullShaderDefineExcludes(const String& excludes)
+{
+    hullShaderDefineExcludes_ = excludes;
+    ReleaseShaders();
+}
+
+void Pass::SetDomainShaderDefineExcludes(const String& excludes)
+{
+    domainShaderDefineExcludes_ = excludes;
+    ReleaseShaders();
+}
+
 void Pass::ReleaseShaders()
 {
     vertexShaders_.Clear();
     pixelShaders_.Clear();
+    geometryShaders_.Clear();
+    hullShaders_.Clear();
+    domainShaders_.Clear();
+    
     extraVertexShaders_.Clear();
     extraPixelShaders_.Clear();
+    extraGeometryShaders_.Clear();
+    extraHullShaders_.Clear();
+    extraDomainShaders_.Clear();
 }
 
 void Pass::MarkShadersLoaded(unsigned frameNumber)
@@ -209,6 +269,49 @@ String Pass::GetEffectivePixelShaderDefines() const
     return String::Joined(psDefines, " ");
 }
 
+String Pass::GetEffectiveGeometryShaderDefines() const
+{
+    // Prefer to return just the original defines if possible
+    if (geometryShaderDefineExcludes_.Empty())
+        return geometryShaderDefines_;
+
+    Vector<String> psDefines = geometryShaderDefines_.Split(' ');
+    Vector<String> psExcludes = geometryShaderDefineExcludes_.Split(' ');
+    for (unsigned i = 0; i < psExcludes.Size(); ++i)
+        psDefines.Remove(psExcludes[i]);
+
+    return String::Joined(psDefines, " ");
+}
+
+String Pass::GetEffectiveHullShaderDefines() const
+{
+    // Prefer to return just the original defines if possible
+    if (hullShaderDefineExcludes_.Empty())
+        return hullShaderDefines_;
+
+    Vector<String> psDefines = hullShaderDefines_.Split(' ');
+    Vector<String> psExcludes = hullShaderDefineExcludes_.Split(' ');
+    for (unsigned i = 0; i < psExcludes.Size(); ++i)
+        psDefines.Remove(psExcludes[i]);
+
+    return String::Joined(psDefines, " ");
+}
+
+String Pass::GetEffectiveDomainShaderDefines() const
+{
+    // Prefer to return just the original defines if possible
+    if (domainShaderDefineExcludes_.Empty())
+        return domainShaderDefines_;
+
+    Vector<String> psDefines = domainShaderDefines_.Split(' ');
+    Vector<String> psExcludes = domainShaderDefineExcludes_.Split(' ');
+    for (unsigned i = 0; i < psExcludes.Size(); ++i)
+        psDefines.Remove(psExcludes[i]);
+
+    return String::Joined(psDefines, " ");
+}
+
+
 Vector<SharedPtr<ShaderVariation> >& Pass::GetVertexShaders(const StringHash& extraDefinesHash)
 {
     // If empty hash, return the base shaders
@@ -225,6 +328,32 @@ Vector<SharedPtr<ShaderVariation> >& Pass::GetPixelShaders(const StringHash& ext
     else
         return extraPixelShaders_[extraDefinesHash];
 }
+
+Vector<SharedPtr<ShaderVariation> >& Pass::GetGeometryShaders(const StringHash& extraDefinesHash)
+{
+    if (!extraDefinesHash.Value())
+        return geometryShaders_;
+    else
+        return extraGeometryShaders_[extraDefinesHash];
+}
+
+Vector<SharedPtr<ShaderVariation> >& Pass::GetHullShaders(const StringHash& extraDefinesHash)
+{
+    if (!extraDefinesHash.Value())
+        return hullShaders_;
+    else
+        return extraHullShaders_[extraDefinesHash];
+}
+
+Vector<SharedPtr<ShaderVariation> >& Pass::GetDomainShaders(const StringHash& extraDefinesHash)
+{
+    if (!extraDefinesHash.Value())
+        return domainShaders_;
+    else
+        return extraDomainShaders_[extraDefinesHash];
+}
+
+
 
 unsigned Technique::basePassIndex = 0;
 unsigned Technique::alphaPassIndex = 0;
@@ -272,13 +401,27 @@ bool Technique::BeginLoad(Deserializer& source)
 
     String globalVS = rootElem.GetAttribute("vs");
     String globalPS = rootElem.GetAttribute("ps");
+    String globalGS = rootElem.GetAttribute("gs");
+    String globalHS = rootElem.GetAttribute("hs");
+    String globalDS = rootElem.GetAttribute("ds");
+
     String globalVSDefines = rootElem.GetAttribute("vsdefines");
     String globalPSDefines = rootElem.GetAttribute("psdefines");
+    String globalGSDefines = rootElem.GetAttribute("gsdefines");
+    String globalHSDefines = rootElem.GetAttribute("hsdefines");
+    String globalDSDefines = rootElem.GetAttribute("dsdefines");
+
     // End with space so that the pass-specific defines can be appended
     if (!globalVSDefines.Empty())
         globalVSDefines += ' ';
     if (!globalPSDefines.Empty())
         globalPSDefines += ' ';
+    if (!globalGSDefines.Empty())
+        globalGSDefines += ' ';
+    if (!globalHSDefines.Empty())
+        globalHSDefines += ' ';
+    if (!globalDSDefines.Empty())
+        globalDSDefines += ' ';
 
     XMLElement passElem = rootElem.GetChild("pass");
     while (passElem)
@@ -311,9 +454,44 @@ bool Technique::BeginLoad(Deserializer& source)
                 newPass->SetPixelShader(globalPS);
                 newPass->SetPixelShaderDefines(globalPSDefines + passElem.GetAttribute("psdefines"));
             }
+            if (passElem.HasAttribute("gs"))
+            {
+                newPass->SetGeometryShader(passElem.GetAttribute("gs"));
+                newPass->SetGeometryShaderDefines(passElem.GetAttribute("gsdefines"));
+            }
+            else
+            {
+                newPass->SetGeometryShader(globalGS);
+                newPass->SetGeometryShaderDefines(globalGSDefines + passElem.GetAttribute("gsdefines"));
+            }
+
+            if (passElem.HasAttribute("hs"))
+            {
+                newPass->SetHullShader(passElem.GetAttribute("hs"));
+                newPass->SetHullShaderDefines(globalHSDefines + passElem.GetAttribute("hsdefines"));
+            }
+            else
+            {
+                newPass->SetHullShader(globalHS);
+                newPass->SetHullShaderDefines(globalHSDefines + passElem.GetAttribute("hsdefines"));
+            }
+
+            if (passElem.HasAttribute("ds"))
+            {
+                newPass->SetDomainShader(passElem.GetAttribute("ds"));
+                newPass->SetDomainShaderDefines(globalDSDefines + passElem.GetAttribute("dsdefines"));
+            }
+            else
+            {
+                newPass->SetDomainShader(globalDS);
+                newPass->SetDomainShaderDefines(globalDSDefines + passElem.GetAttribute("dsdefines"));
+            }
 
             newPass->SetVertexShaderDefineExcludes(passElem.GetAttribute("vsexcludes"));
             newPass->SetPixelShaderDefineExcludes(passElem.GetAttribute("psexcludes"));
+            newPass->SetGeometryShaderDefineExcludes(passElem.GetAttribute("gsexcludes"));
+            newPass->SetHullShaderDefineExcludes(passElem.GetAttribute("hsexcludes"));
+            newPass->SetDomainShaderDefineExcludes(passElem.GetAttribute("dsexcludes"));
 
             if (passElem.HasAttribute("lighting"))
             {
@@ -393,12 +571,24 @@ SharedPtr<Technique> Technique::Clone(const String& cloneName) const
         newPass->SetDepthWrite(srcPass->GetDepthWrite());
         newPass->SetAlphaToCoverage(srcPass->GetAlphaToCoverage());
         newPass->SetIsDesktop(srcPass->IsDesktop());
+
         newPass->SetVertexShader(srcPass->GetVertexShader());
         newPass->SetPixelShader(srcPass->GetPixelShader());
+        newPass->SetGeometryShader(srcPass->GetGeometryShader());
+        newPass->SetHullShader(srcPass->GetHullShader());
+        newPass->SetDomainShader(srcPass->GetDomainShader());
+
         newPass->SetVertexShaderDefines(srcPass->GetVertexShaderDefines());
         newPass->SetPixelShaderDefines(srcPass->GetPixelShaderDefines());
+        newPass->SetGeometryShaderDefines(srcPass->GetGeometryShaderDefines());
+        newPass->SetHullShaderDefines(srcPass->GetHullShaderDefines());
+        newPass->SetDomainShaderDefines(srcPass->GetDomainShaderDefines());
+        
         newPass->SetVertexShaderDefineExcludes(srcPass->GetVertexShaderDefineExcludes());
         newPass->SetPixelShaderDefineExcludes(srcPass->GetPixelShaderDefineExcludes());
+        newPass->SetGeometryShaderDefineExcludes(srcPass->GetGeometryShaderDefineExcludes());
+        newPass->SetHullShaderDefineExcludes(srcPass->GetHullShaderDefineExcludes());
+        newPass->SetDomainShaderDefineExcludes(srcPass->GetDomainShaderDefineExcludes());
     }
 
     return ret;
@@ -493,7 +683,7 @@ PODVector<Pass*> Technique::GetPasses() const
     return ret;
 }
 
-SharedPtr<Technique> Technique::CloneWithDefines(const String& vsDefines, const String& psDefines)
+SharedPtr<Technique> Technique::CloneWithDefines(const String& vsDefines, const String& psDefines, const String& gsDefines, const String& hsDefines, const String& dsDefines)
 {
     // Return self if no actual defines
     if (vsDefines.Empty() && psDefines.Empty())
@@ -520,6 +710,12 @@ SharedPtr<Technique> Technique::CloneWithDefines(const String& vsDefines, const 
             pass->SetVertexShaderDefines(pass->GetVertexShaderDefines() + " " + vsDefines);
         if (!psDefines.Empty())
             pass->SetPixelShaderDefines(pass->GetPixelShaderDefines() + " " + psDefines);
+        if (!gsDefines.Empty())
+            pass->SetGeometryShaderDefines(pass->GetGeometryShaderDefines() + " " + gsDefines);
+        if (!hsDefines.Empty())
+            pass->SetHullShaderDefines(pass->GetHullShaderDefines() + " " + hsDefines);
+        if (!dsDefines.Empty())
+            pass->SetDomainShaderDefines(pass->GetDomainShaderDefines() + " " + dsDefines);
     }
 
     return i->second_;

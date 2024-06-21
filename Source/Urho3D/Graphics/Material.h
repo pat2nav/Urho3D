@@ -136,10 +136,18 @@ public:
     void SetNumTechniques(unsigned num);
     /// Set technique.
     void SetTechnique(unsigned index, Technique* tech, MaterialQuality qualityLevel = QUALITY_LOW, float lodDistance = 0.0f);
+
     /// Set additional vertex shader defines. Separate multiple defines with spaces. Setting defines at the material level causes technique(s) to be cloned as necessary.
     void SetVertexShaderDefines(const String& defines);
     /// Set additional pixel shader defines. Separate multiple defines with spaces. Setting defines at the material level causes technique(s) to be cloned as necessary.
     void SetPixelShaderDefines(const String& defines);
+    /// Set additional geometry shader defines. Separate multiple defines with spaces. Setting defines at the material level causes technique(s) to be cloned as necessary.
+    void SetGeometryShaderDefines(const String& defines);
+    /// Set additional hull shader defines. Separate multiple defines with spaces. Setting defines at the material level causes technique(s) to be cloned as necessary.
+    void SetHullShaderDefines(const String& defines);
+    /// Set additional domain shader defines. Separate multiple defines with spaces. Setting defines at the material level causes technique(s) to be cloned as necessary.
+    void SetDomainShaderDefines(const String& defines);
+
     /// Set shader parameter.
     void SetShaderParameter(const String& name, const Variant& value);
     /// Set shader parameter animation.
@@ -289,10 +297,18 @@ private:
     HashMap<StringHash, MaterialShaderParameter> shaderParameters_;
     /// %Shader parameters animation infos.
     HashMap<StringHash, SharedPtr<ShaderParameterAnimationInfo> > shaderParameterAnimationInfos_;
+
     /// Vertex shader defines.
     String vertexShaderDefines_;
     /// Pixel shader defines.
     String pixelShaderDefines_;
+    /// Geometry shader defines.
+    String geometryShaderDefines_;
+    /// Hull shader defines.
+    String hullShaderDefines_;
+    /// Domain shader defines.
+    String domainShaderDefines_;
+
     /// Normal culling mode.
     CullMode cullMode_{};
     /// Culling mode for shadow rendering.
