@@ -90,10 +90,10 @@ void Button::GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexDat
     IntVector2 offset(IntVector2::ZERO);
     if (enabled_)
     {
-        if (hovering_ || HasFocus())
-            offset += hoverOffset_;
         if (pressed_ || selected_)
             offset += pressedOffset_;
+        else if (hovering_ || HasFocus())
+            offset += hoverOffset_;
     }
     else
     {
