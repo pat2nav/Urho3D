@@ -163,6 +163,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
             switch(charCode)
             {
             case 0x37E:     charCodeToMap=0x3B;      break;         // Remap ;
+            case 0x0AD:     charCodeToMap=0x2D;      break;         // Remap -
             }
 
             charCodes[glyphIndex + 1] = (unsigned)charCodeToMap;
