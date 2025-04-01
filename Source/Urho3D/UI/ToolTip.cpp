@@ -92,6 +92,7 @@ void ToolTip::Update(float timeStep)
         }
         else if (displayAt_.GetMSec(false) >= (unsigned)(effectiveDelay * 1000.0f) && parent_ == target_)
         {
+            RefreshPosition(target_);
             originalPosition_ = GetPosition();
             IntVector2 screenPosition = GetScreenPosition();
             SetParent(root);
