@@ -56,6 +56,10 @@ public:
     /// Return the delay in seconds until the tooltip shows once hovering.
     float GetDelay() const { return delay_; }
 
+protected:
+    virtual void RefreshPosition(UIElement * target) {};
+
+
 private:
     /// The element that is being tracked for hovering. Normally the parent element.
     WeakPtr<UIElement> target_;
