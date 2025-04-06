@@ -38,6 +38,8 @@ endif ()
 # Set project name
 project (Urho3D)
 
+set(CMAKE_DEBUG_POSTFIX "")
+
 # Set CMake modules search path
 set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Modules)
 
