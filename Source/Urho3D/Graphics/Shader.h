@@ -60,6 +60,8 @@ public:
     unsigned GetTimeStamp() const { return timeStamp_; }
 
 private:
+    /// Return the table of shader variations for a specific shader stage.
+    HashMap<StringHash, SharedPtr<ShaderVariation> >& GetVariations(ShaderType type);
     /// Process source code and include files. Return true if successful.
     bool ProcessSource(String& code, Deserializer& source);
     /// Sort the defines and strip extra spaces to prevent creation of unnecessary duplicate shader variations.

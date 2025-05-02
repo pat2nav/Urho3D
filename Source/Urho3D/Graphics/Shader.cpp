@@ -186,7 +186,7 @@ const String& Shader::GetSourceCode(ShaderType type) const
 ShaderVariation* Shader::GetVariation(ShaderType type, const char* defines)
 {
     StringHash definesHash(defines);
-    HashMap<StringHash, SharedPtr<ShaderVariation> >& variations(type == VS ? vsVariations_ : psVariations_);
+    HashMap<StringHash, SharedPtr<ShaderVariation> >& variations = GetVariations(type);
     HashMap<StringHash, SharedPtr<ShaderVariation> >::Iterator i = variations.Find(definesHash);
     if (i == variations.End())
     {
@@ -213,6 +213,26 @@ ShaderVariation* Shader::GetVariation(ShaderType type, const char* defines)
     }
 
     return i->second_;
+}
+
+HashMap<StringHash, SharedPtr<ShaderVariation> >& Shader::GetVariations(ShaderType type)
+{
+    switch (type)
+    {
+    case VS:
+        return vsVariations_;
+    case PS:
+        return psVariations_;
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
+    case GS:
+        return gsVariations_;
+    case HS:
+        return hsVariations_;
+    case DS:
+        return dsVariations_;
+#endif
+    }
+    return vsVariations_;
 }
 
 bool Shader::ProcessSource(String& code, Deserializer& source)
@@ -272,8 +292,13 @@ String Shader::NormalizeDefines(const String& defines)
 
 void Shader::RefreshMemoryUse()
 {
+    unsigned sourcesSize = vsSourceCode_.Length() + psSourceCode_.Length();
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
+    sourcesSize += gsSourceCode_.Length();
+    sourcesSize += hsSourceCode_.Length() + dsSourceCode_.Length();
+#endif
     SetMemoryUse(
-        (unsigned)(sizeof(Shader) + vsSourceCode_.Length() + psSourceCode_.Length() + numVariations_ * sizeof(ShaderVariation)));
+        (unsigned)(sizeof(Shader) + sourcesSize + numVariations_ * sizeof(ShaderVariation)));
 }
 
 }

@@ -454,6 +454,7 @@ bool Technique::BeginLoad(Deserializer& source)
                 newPass->SetPixelShader(globalPS);
                 newPass->SetPixelShaderDefines(globalPSDefines + passElem.GetAttribute("psdefines"));
             }
+
             if (passElem.HasAttribute("gs"))
             {
                 newPass->SetGeometryShader(passElem.GetAttribute("gs"));
@@ -710,12 +711,14 @@ SharedPtr<Technique> Technique::CloneWithDefines(const String& vsDefines, const 
             pass->SetVertexShaderDefines(pass->GetVertexShaderDefines() + " " + vsDefines);
         if (!psDefines.Empty())
             pass->SetPixelShaderDefines(pass->GetPixelShaderDefines() + " " + psDefines);
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
         if (!gsDefines.Empty())
             pass->SetGeometryShaderDefines(pass->GetGeometryShaderDefines() + " " + gsDefines);
         if (!hsDefines.Empty())
             pass->SetHullShaderDefines(pass->GetHullShaderDefines() + " " + hsDefines);
         if (!dsDefines.Empty())
             pass->SetDomainShaderDefines(pass->GetDomainShaderDefines() + " " + dsDefines);
+#endif
     }
 
     return i->second_;

@@ -800,6 +800,10 @@ void Graphics::Draw(PrimitiveType type, unsigned vertexStart, unsigned vertexCou
         type = POINT_LIST;
 
     GetD3DPrimitiveType(vertexCount, type, primitiveCount, d3dPrimitiveType);
+    
+    // If tessellating then remap primitive type
+    GetTessellationType(d3dPrimitiveType, hullShader_ && domainShader_);
+
     if (d3dPrimitiveType != primitiveType_)
     {
         impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
@@ -825,6 +829,10 @@ void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount
         type = POINT_LIST;
 
     GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+    
+    // If tessellating then remap primitive type
+    GetTessellationType(d3dPrimitiveType, hullShader_ && domainShader_);
+
     if (d3dPrimitiveType != primitiveType_)
     {
         impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
@@ -850,6 +858,10 @@ void Graphics::Draw(PrimitiveType type, unsigned indexStart, unsigned indexCount
         type = POINT_LIST;
 
     GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+
+    // If tessellating then remap primitive type
+    GetTessellationType(d3dPrimitiveType, hullShader_ && domainShader_);
+
     if (d3dPrimitiveType != primitiveType_)
     {
         impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);
@@ -876,6 +888,10 @@ void Graphics::DrawInstanced(PrimitiveType type, unsigned indexStart, unsigned i
         type = POINT_LIST;
 
     GetD3DPrimitiveType(indexCount, type, primitiveCount, d3dPrimitiveType);
+
+    // If tessellating then remap primitive type
+    GetTessellationType(d3dPrimitiveType, hullShader_ && domainShader_);
+
     if (d3dPrimitiveType != primitiveType_)
     {
         impl_->deviceContext_->IASetPrimitiveTopology(d3dPrimitiveType);

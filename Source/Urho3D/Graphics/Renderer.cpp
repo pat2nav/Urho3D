@@ -182,6 +182,8 @@ static const char* geometryVSVariations[] =
     "INSTANCED ",
     "BILLBOARD ",
     "DIRBILLBOARD ",
+    "POINTBILLBOARD ",
+    "POINTDIRBILLBOARD ",
     "TRAILFACECAM ",
     "TRAILBONE "
 };
@@ -1169,9 +1171,16 @@ void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows,
 
     Vector<SharedPtr<ShaderVariation> >& vertexShaders = queue.hasExtraDefines_ ? pass->GetVertexShaders(queue.vsExtraDefinesHash_) : pass->GetVertexShaders();
     Vector<SharedPtr<ShaderVariation> >& pixelShaders = queue.hasExtraDefines_ ? pass->GetPixelShaders(queue.psExtraDefinesHash_) : pass->GetPixelShaders();
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
     Vector<SharedPtr<ShaderVariation> >& geometryShaders = queue.hasExtraDefines_ ? pass->GetGeometryShaders(queue.gsExtraDefinesHash_) : pass->GetGeometryShaders();
     Vector<SharedPtr<ShaderVariation> >& hullShaders = queue.hasExtraDefines_ ? pass->GetHullShaders(queue.hsExtraDefinesHash_) : pass->GetHullShaders();
     Vector<SharedPtr<ShaderVariation> >& domainShaders = queue.hasExtraDefines_ ? pass->GetDomainShaders(queue.dsExtraDefinesHash_) : pass->GetDomainShaders();
+#else
+    // Provide stubs for LoadPassShaders.
+    Vector<SharedPtr<ShaderVariation> > geometryShaders;
+    Vector<SharedPtr<ShaderVariation> > hsShaders;
+    Vector<SharedPtr<ShaderVariation> > dsShaders;
+#endif
 
     // Load shaders now if necessary
     if (!vertexShaders.Size() || !pixelShaders.Size())
@@ -1198,9 +1207,11 @@ void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows,
                 // Do not log error, as it would result in a lot of spam
                 batch.vertexShader_ = nullptr;
                 batch.pixelShader_ = nullptr;
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
                 batch.geometryShader_ = nullptr;
                 batch.hullShader_ = nullptr;
                 batch.domainShader_ = nullptr;
+#endif
                 return;
             }
 
@@ -1247,9 +1258,11 @@ void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows,
 
             batch.vertexShader_ = vertexShaders[vsi];
             batch.pixelShader_ = pixelShaders[psi];
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
             batch.geometryShader_ = geometryShaders.Empty() ? nullptr : geometryShaders[vsi];
             batch.hullShader_ = hullShaders.Empty() ? nullptr : hullShaders[vsi];
             batch.domainShader_ = domainShaders.Empty() ? nullptr : domainShaders[vsi];
+#endif
         }
         else
         {
@@ -1262,17 +1275,21 @@ void Renderer::SetBatchShaders(Batch& batch, Technique* tech, bool allowShadows,
 
                 unsigned vsi = batch.geometryType_ * MAX_VERTEXLIGHT_VS_VARIATIONS + numVertexLights;
                 batch.vertexShader_ = vertexShaders[vsi];
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
                 batch.geometryShader_ = geometryShaders.Empty() ? nullptr : geometryShaders[vsi];
                 batch.hullShader_ = hullShaders.Empty() ? nullptr : hullShaders[vsi];
                 batch.domainShader_ = domainShaders.Empty() ? nullptr : domainShaders[vsi];
+#endif
             }
             else
             {
                 unsigned vsi = batch.geometryType_;
                 batch.vertexShader_ = vertexShaders[vsi];
+#if !defined(GL_ES_VERSION_2_0) && !defined(URHO3D_D3D9)
                 batch.geometryShader_ = geometryShaders.Empty() ? nullptr : geometryShaders[vsi];
                 batch.hullShader_ = hullShaders.Empty() ? nullptr : hullShaders[vsi];
                 batch.domainShader_ = domainShaders.Empty() ? nullptr : domainShaders[vsi];
+#endif
             }
 
             batch.pixelShader_ = pixelShaders[heightFog ? 1 : 0];
