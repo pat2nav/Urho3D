@@ -163,7 +163,7 @@ bool noOverwriteTexture_ = false;
 bool noOverwriteNewerTexture_ = false;
 bool checkUniqueModel_ = true;
 bool moveToBindPose_ = false;
-unsigned maxBones_ = 64;
+unsigned maxBones_ = 128;
 Vector<String> nonSkinningBoneIncludes_;
 Vector<String> nonSkinningBoneExcludes_;
 
