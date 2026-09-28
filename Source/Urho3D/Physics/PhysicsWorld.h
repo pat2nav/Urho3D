@@ -40,6 +40,7 @@ class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btDynamicsWorld;
 class btPersistentManifold;
+class btGhostPairCallback;
 
 namespace Urho3D
 {
@@ -60,10 +61,22 @@ struct CollisionGeometryData;
 /// Physics raycast hit.
 struct URHO3D_API PhysicsRaycastResult
 {
+    /// Construct with defaults.
+    PhysicsRaycastResult() :
+        body_(0)
+    {
+    }
+
     /// Test for inequality, added to prevent GCC from complaining.
     bool operator !=(const PhysicsRaycastResult& rhs) const
     {
-        return position_ != rhs.position_ || normal_ != rhs.normal_ || distance_ != rhs.distance_ || body_ != rhs.body_;
+        return 
+            position_ != rhs.position_ || 
+            normal_ != rhs.normal_ || 
+            distance_ != rhs.distance_ || 
+            body_ != rhs.body_ ||
+			shapePart_ != rhs.shapePart_ ||
+			triangleIndex_ != rhs.triangleIndex_;
     }
 
     /// Hit worldspace position.
@@ -77,6 +90,7 @@ struct URHO3D_API PhysicsRaycastResult
     /// Rigid body that was hit.
     RigidBody* body_{};
     int shapePart_;
+	int triangleIndex_;
 };
 
 /// Delayed world transform assignment for parented rigidbodies.
@@ -361,7 +375,9 @@ private:
     /// Debug renderer.
     DebugRenderer* debugRenderer_{};
     /// Debug draw flags.
-    int debugMode_{};
+    int debugMode_;
+    /// GhostPair Callback
+    btGhostPairCallback *ghostPairCallback;
 };
 
 /// Register Physics library objects.

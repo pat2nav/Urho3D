@@ -133,13 +133,22 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
         URHO3D_LOGERROR("Could not create font face");
         return false;
     }
-    error = FT_Set_Char_Size(face, 0, pointSize * 64, oversampling_ * FONT_DPI, FONT_DPI);
+	error = FT_Set_Pixel_Sizes(face, 0, pointSize);
+//    error = FT_Set_Char_Size(face, 0, pointSize * 64, oversampling_ * FONT_DPI, FONT_DPI);
     if (error)
     {
         FT_Done_Face(face);
         URHO3D_LOGERROR("Could not set font point size " + String(pointSize));
         return false;
     }
+
+	// If the font is too large for the maximum texture size, 
+    // try to reduce the point size to fit. 
+    // This is a workaround for fonts that report very large sizes (e.g. 2048 pixels) that cause out of memory crash when creating textures.
+    int actual = face->size->metrics.height >> 6;
+    int corrected = pointSize * pointSize / actual;
+    FT_Set_Pixel_Sizes(face, 0, corrected);
+
 
     face_ = face;
 

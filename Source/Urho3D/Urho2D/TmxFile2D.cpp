@@ -455,7 +455,7 @@ bool TmxFile2D::EndLoad()
 
     XMLElement rootElem = loadXMLFile_->GetRoot("map");
     String version = rootElem.GetAttribute("version");
-    if (version != "1.0")
+    if (version != "1.10")
     {
         URHO3D_LOGERROR("Invalid version");
         return false;

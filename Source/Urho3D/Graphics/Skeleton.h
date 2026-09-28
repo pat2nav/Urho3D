@@ -99,6 +99,8 @@ public:
     void Define(const Skeleton& src);
     /// Set root bone's index.
     void SetRootBoneIndex(unsigned index);
+    /// Get root bone's index.
+    unsigned GetRootBoneIndex() const;
     /// Clear bones.
     void ClearBones();
     /// Reset all animating bones to initial positions.

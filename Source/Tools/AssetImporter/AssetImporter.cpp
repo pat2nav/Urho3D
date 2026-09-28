@@ -2158,7 +2158,9 @@ unsigned GetBoneIndex(OutModel& model, const String& boneName)
 {
     for (unsigned i = 0; i < model.bones_.Size(); ++i)
     {
-        if (boneName == model.bones_[i]->mName.data)
+		const aiString & aiBoneName = model.bones_[i]->mName;
+
+        if (boneName == aiBoneName.data)
             return i;
     }
     return M_MAX_UNSIGNED;

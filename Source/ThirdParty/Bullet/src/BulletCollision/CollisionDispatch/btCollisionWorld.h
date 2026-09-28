@@ -199,6 +199,7 @@ public:
 		int m_collisionFilterGroup;
 		int m_collisionFilterMask;
 		int m_shapePart;
+		int m_triangleIndex;
 		//@BP Mod - Custom flags, currently used to enable backface culling on tri-meshes, see btRaycastCallback.h. Apply any of the EFlags defined there on m_flags here to invoke.
 		unsigned int m_flags;
 
@@ -215,6 +216,8 @@ public:
 			  m_collisionObject(0),
 			  m_collisionFilterGroup(btBroadphaseProxy::DefaultFilter),
 			  m_collisionFilterMask(btBroadphaseProxy::AllFilter),
+			  m_shapePart(-1),
+			  m_triangleIndex(-1),
 			  //@BP Mod
 			  m_flags(0)
 		{
@@ -255,6 +258,7 @@ public:
 			if(rayResult.m_localShapeInfo)
 			{
 				m_shapePart = rayResult.m_localShapeInfo->m_shapePart;
+				m_triangleIndex = rayResult.m_localShapeInfo->m_triangleIndex;
 			}
 
 			if (normalInWorldSpace)

@@ -47,6 +47,7 @@
 #include <Bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 #include <Bullet/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
 #include <Bullet/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 extern ContactAddedCallback gContactAddedCallback;
 
@@ -153,6 +154,7 @@ struct PhysicsQueryCallback : public btCollisionWorld::ContactResultCallback
 PhysicsWorld::PhysicsWorld(Context* context) :
     Component(context),
     fps_(DEFAULT_FPS),
+	ghostPairCallback(0),
     debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits)
 {
     gContactAddedCallback = CustomMaterialCombinerCallback;
@@ -176,6 +178,10 @@ PhysicsWorld::PhysicsWorld(Context* context) :
     world_->setInternalTickCallback(InternalPreTickCallback, static_cast<void*>(this), true);
     world_->setInternalTickCallback(InternalTickCallback, static_cast<void*>(this), false);
     world_->setSynchronizeAllMotionStates(true);
+
+    // Add ghost pair callback
+    ghostPairCallback = new btGhostPairCallback();
+    world_->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback);
 }
 
 PhysicsWorld::~PhysicsWorld()
@@ -202,6 +208,12 @@ PhysicsWorld::~PhysicsWorld()
     if (!PhysicsWorld::config.collisionConfig_)
         delete collisionConfiguration_;
     collisionConfiguration_ = nullptr;
+    // Delete GhostPair callback
+    if (ghostPairCallback)
+    {
+        delete ghostPairCallback;
+        ghostPairCallback = 0;
+    }
 }
 
 void PhysicsWorld::RegisterObject(Context* context)
@@ -427,6 +439,7 @@ void PhysicsWorld::RaycastSingle(PhysicsRaycastResult& result, const Ray& ray, f
         result.hitFraction_ = rayCallback.m_closestHitFraction;
         result.body_ = static_cast<RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
         result.shapePart_ = rayCallback.m_shapePart;
+		result.triangleIndex_ = rayCallback.m_triangleIndex;
     }
     else
     {
@@ -435,6 +448,8 @@ void PhysicsWorld::RaycastSingle(PhysicsRaycastResult& result, const Ray& ray, f
         result.distance_ = M_INFINITY;
         result.hitFraction_ = 0.0f;
         result.body_ = nullptr;
+        result.shapePart_ = 0;
+		result.triangleIndex_ = -1;
     }
 }
 
@@ -516,6 +531,7 @@ void PhysicsWorld::SphereCast(PhysicsRaycastResult& result, const Ray& ray, floa
         result.distance_ = convexCallback.m_closestHitFraction * (endPos - ray.origin_).Length();
         result.hitFraction_ = convexCallback.m_closestHitFraction;
         result.shapePart_ = convexCallback.m_shapePart;
+        result.triangleIndex_ = -1;
     }
     else
     {
@@ -525,6 +541,7 @@ void PhysicsWorld::SphereCast(PhysicsRaycastResult& result, const Ray& ray, floa
         result.distance_ = M_INFINITY;
         result.hitFraction_ = 0.0f;
         result.shapePart_ = 0;
+        result.triangleIndex_ = -1;
     }
 }
 

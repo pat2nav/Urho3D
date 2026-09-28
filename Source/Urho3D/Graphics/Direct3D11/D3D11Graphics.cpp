@@ -2185,7 +2185,7 @@ unsigned Graphics::GetFormat(const String& formatName)
 
 unsigned Graphics::GetMaxBones()
 {
-    return 128;
+    return 256;
 }
 
 bool Graphics::GetGL3Support()

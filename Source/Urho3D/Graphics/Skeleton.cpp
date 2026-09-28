@@ -120,6 +120,11 @@ void Skeleton::SetRootBoneIndex(unsigned index)
         URHO3D_LOGERROR("Root bone index out of bounds");
 }
 
+unsigned Skeleton::GetRootBoneIndex() const
+{
+    return rootBoneIndex_;
+}
+
 void Skeleton::ClearBones()
 {
     bones_.Clear();

@@ -49,7 +49,7 @@ Vector<ModelBone> bones_;
 Vector<ModelMorph> morphs_;
 Vector<String> materialNames_;
 BoundingBox boundingBox_;
-unsigned maxBones_ = 64;
+unsigned maxBones_ = 256;
 unsigned numSubMeshes_ = 0;
 bool useOneBuffer_ = true;
 
